@@ -6,9 +6,16 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/STALKER/Intro.unity
+    guid: b23776208f85cad4faf93e1d3f00ea04
+  - enabled: 1
+    path: Assets/STALKER/MainMenu_P.unity
+    guid: e2420d4defe909443b489723a1f64dac
+  - enabled: 1
+    path: Assets/STALKER/GameScene.unity
+    guid: ed74006a849c1b24da11a20eb498ce45
+  - enabled: 1
     path: Assets/DarkTree FPS/Demo Zone.unity
     guid: 4fef490da964bf749a96c0b4fbe8c3b9
-  - enabled: 0
-    path: Assets/SceneTransition.unity
-    guid: 3173366a10b6c344298ae389e628321d
   m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0
