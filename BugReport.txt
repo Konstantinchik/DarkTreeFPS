@@ -1,0 +1,39 @@
+
+++++++++++++++++++++++++++++++++++++++++++++
+11.01.2025-22:35
+
+--------------------------------------------
+Errors
+
+NullReferenceException: Object reference not set to an instance of an object
+UnityEditor.GameObjectInspector.OnDisable () (at <878b6c863a9e4c42bf8483a7b6c60e0b>:0)
+
+SerializedObjectNotCreatableException: Object at index 0 is null
+UnityEditor.Editor.CreateSerializedObject () (at <878b6c863a9e4c42bf8483a7b6c60e0b>:0)
+UnityEditor.Editor.GetSerializedObjectInternal () (at <878b6c863a9e4c42bf8483a7b6c60e0b>:0)
+UnityEditor.Editor.get_serializedObject () (at <878b6c863a9e4c42bf8483a7b6c60e0b>:0)
+UnityEditor.RendererEditorBase.OnEnable () (at <878b6c863a9e4c42bf8483a7b6c60e0b>:0)
+UnityEditor.SkinnedMeshRendererEditor.OnEnable () (at <878b6c863a9e4c42bf8483a7b6c60e0b>:0)
+
+MissingReferenceException: The variable m_Targets of GameObjectInspector doesn't exist anymore.
+You probably need to reassign the m_Targets variable of the 'GameObjectInspector' script in the inspector. Parameter name: componentOrGameObject
+UnityEngine.Object+MarshalledUnityObject.TryThrowEditorNullExceptionObject (UnityEngine.Object unityObj, System.String parameterName) (at <44f3679c53d1477a9c6e72f269e3a3a9>:0)
+UnityEngine.Bindings.ThrowHelper.ThrowArgumentNullException (System.Object obj, System.String parameterName) (at <44f3679c53d1477a9c6e72f269e3a3a9>:0)
+UnityEditor.PrefabUtility.IsPartOfVariantPrefab (UnityEngine.Object componentOrGameObject) (at <878b6c863a9e4c42bf8483a7b6c60e0b>:0)
+UnityEditor.GameObjectInspector.OnEnable () (at <878b6c863a9e4c42bf8483a7b6c60e0b>:0)
+
+SerializedObjectNotCreatableException: Object at index 0 is null
+UnityEditor.Editor.CreateSerializedObject () (at <878b6c863a9e4c42bf8483a7b6c60e0b>:0)
+UnityEditor.Editor.GetSerializedObjectInternal () (at <878b6c863a9e4c42bf8483a7b6c60e0b>:0)
+UnityEditor.Editor.get_serializedObject () (at <878b6c863a9e4c42bf8483a7b6c60e0b>:0)
+UnityEditor.TransformInspector.OnEnable () (at <878b6c863a9e4c42bf8483a7b6c60e0b>:0)
+
+Warnings
+
+Setting linear velocity of a kinematic body is not supported.
+UnityEngine.Rigidbody:set_linearVelocity (UnityEngine.Vector3)
+DarkTreeFPS.ZombieNPC:OnAnimatorMove () (at Assets/DarkTree FPS/Scripts/NPC/ZombieNPC.cs:437)
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++
