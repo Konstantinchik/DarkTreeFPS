@@ -208,6 +208,7 @@ namespace DarkTreeFPS
 
         void Update()
         {
+            /*
             if(navMeshAgent.isOnNavMesh == false)
             {
                 Destroy(gameObject);
@@ -254,6 +255,53 @@ namespace DarkTreeFPS
                 var _lookPosition = curretTarget.position - transform.position;
                 _lookPosition.y = 0;
                 var rotation = Quaternion.LookRotation(_lookPosition);
+                transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * 2);
+            }
+            */
+
+            if (!navMeshAgent.isOnNavMesh)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            aiControl.SetTarget(desiredPosition);
+
+            if (health <= 0)
+            {
+                Death();
+                return;
+            }
+
+            if (debug)
+                Debug.DrawRay(shootPoint.transform.position, shootPoint.forward * 100);
+            else
+                TargetMachine();
+
+            if (aimIK != null && curretTarget != null)
+            {
+                aimIK.target = curretTarget;
+            }
+
+            animator.SetBool("Crouch", m_Crouching);
+
+            Vector3 _lookPosition;
+
+            if (curretTarget == null)
+            {
+                _lookPosition = desiredPosition - transform.position;
+            }
+            else
+            {
+                _lookPosition = curretTarget.position - transform.position;
+            }
+
+            _lookPosition.y = 0;
+
+            // ✅ Безопасная проверка перед LookRotation
+            if (_lookPosition.sqrMagnitude > 0.0001f)
+            {
+                Quaternion rotation = Quaternion.LookRotation(_lookPosition);
                 transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * 2);
             }
 
