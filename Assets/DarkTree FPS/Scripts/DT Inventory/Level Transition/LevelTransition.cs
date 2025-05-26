@@ -11,7 +11,7 @@ namespace DTInventory
 
         private void OnTriggerEnter(Collider other)
         {
-            FindFirstObjectByType<SaveData>().SaveLevelPeristence();
+            FindFirstObjectByType<SaveData>().SaveLevelPersistence();
             SceneManager.LoadScene(sceneId);
         }
     }

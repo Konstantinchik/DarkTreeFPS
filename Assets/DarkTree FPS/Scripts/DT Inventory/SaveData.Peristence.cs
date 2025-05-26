@@ -11,7 +11,7 @@ namespace DTInventory
     /// <summary>
     /// Method to save level state for transition persistance
     /// </summary>
-    public void SaveLevelPeristence()
+    public void SaveLevelPersistence()
     {
         var allSceneItems = FindObjectsOfType<Item>();
 
