@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -14,6 +15,8 @@ public class MainMenuController : MonoBehaviour
     [Header("Настройки")]
     public string newGameSceneName = "GameScene"; // Имя сцены для "Новой игры"
     public GameObject optionsPanel; // Панель настроек (UI Panel)
+
+    public bool unloadCurrentScene = false;
 
     private void Start()
     {
@@ -52,6 +55,27 @@ public class MainMenuController : MonoBehaviour
     {
         Debug.Log("Открываем меню загрузки...");
         // Дописать логику для выбора слота
+        StartCoroutine(LoadSceneRoutine());
+    }
+
+    private IEnumerator LoadSceneRoutine()
+    {
+
+        AsyncOperation loadOp = SceneManager.LoadSceneAsync("GameScene", LoadSceneMode.Additive);
+        while (!loadOp.isDone)
+            yield return null;
+
+        Scene newScene = SceneManager.GetSceneByName("GameScene");
+        SceneManager.SetActiveScene(newScene);
+
+        if (unloadCurrentScene)
+        {
+            Scene currentScene = SceneManager.GetActiveScene();
+            if (currentScene.name != "GameScene")
+                SceneManager.UnloadSceneAsync(currentScene);
+        }
+
+     
     }
 
     // Вкл/выкл панель настроек
