@@ -12,6 +12,8 @@ namespace DTInventory
         // [System.Obsolete]
         public void Save()
         {
+            Debug.LogError("---------SAVE---------");
+
             //Player data
             var stat = FindFirstObjectByType<PlayerStats>();
             var camera_rot = Camera.main.transform.rotation;
