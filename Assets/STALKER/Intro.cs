@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -15,11 +14,6 @@ public class Intro : MonoBehaviour
 
     }
 
-    void Update()
-    {
-        
-    }
-
     IEnumerator LoadLevel()
     {
         yield return new WaitForSeconds(3f);
@@ -29,6 +23,5 @@ public class Intro : MonoBehaviour
             // отображаем прогресс
             yield return 0;
         }
-
     }
 }

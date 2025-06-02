@@ -25,7 +25,7 @@ namespace DTInventory
             PlayerStatsData p_data = new PlayerStatsData(stat.health, stat.useConsumeSystem, stat.hydration, stat.hydrationSubstractionRate, stat.thirstDamage, stat.hydrationTimer, stat.satiety, stat.satietySubstractionRate, stat.hungerDamage, stat.satietyTimer, stat.playerPosition, stat.playerRotation, camera_rot, controller.targetDirection, controller._mouseAbsolute, controller._smoothMouse);
             string player_data = JsonUtility.ToJson(p_data);
 
-            File.WriteAllText(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_playerData", player_data);
+            File.WriteAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_playerData", player_data);
 
             //NPC and Zombies
 
@@ -71,7 +71,7 @@ namespace DTInventory
             }
 
             string _charactersData = JsonUtility.ToJson(charactersData);
-            File.WriteAllText(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_charactersData", _charactersData);
+            File.WriteAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_charactersData", _charactersData);
             //Save inventory items
 
             var sceneItems = FindObjectsOfType<InventoryItem>();
@@ -95,7 +95,7 @@ namespace DTInventory
 
             InventoryData inventoryData = new InventoryData(_i, _s, _p, _a);
             string _inventoryData = JsonUtility.ToJson(inventoryData);
-            File.WriteAllText(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_inventoryData", _inventoryData);
+            File.WriteAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_inventoryData", _inventoryData);
 
             //Save scene items
 
@@ -126,7 +126,7 @@ namespace DTInventory
 
             string _itemsLevelData = JsonUtility.ToJson(itemsLevelData);
             //print(_itemsLevelData);
-            File.WriteAllText(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_itemsLevelData", _itemsLevelData);
+            File.WriteAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_itemsLevelData", _itemsLevelData);
 
             //Save lootbox items
 
@@ -161,7 +161,7 @@ namespace DTInventory
             lootBoxData.stackSize = loot_ItemsCount.ToArray();
 
             string _lootBoxData = JsonUtility.ToJson(lootBoxData);
-            File.WriteAllText(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_lootboxData", _lootBoxData);
+            File.WriteAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_lootboxData", _lootBoxData);
 
         }
     }
