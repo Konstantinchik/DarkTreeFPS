@@ -1,4 +1,3 @@
-//using DTInventory;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -7,227 +6,225 @@ using UnityEngine.SceneManagement;
 namespace DTInventory
 {
     public partial class SaveData : MonoBehaviour
-{
-    /// <summary>
-    /// Method to save level state for transition persistance
-    /// </summary>
-    public void SaveLevelPersistence()
     {
-        var allSceneItems = FindObjectsOfType<Item>();
-
-        //Save scene items
-
-        List<Item> enabledItems = new List<Item>();
-
-        foreach (var item in allSceneItems)
+        private static string GetSaveDirectory()
         {
-            if (item.isActiveAndEnabled)
-                enabledItems.Add(item);
-        }
+            Debug.Log("������ GetSaveDirectory()");
 
-        LevelData itemsLevelData = new LevelData();
+            string savePath;
 
-        itemsLevelData.itemName = new string[enabledItems.ToArray().Length];
-        itemsLevelData.itemPos = new Vector3[enabledItems.ToArray().Length];
-        itemsLevelData.itemRot = new Quaternion[enabledItems.ToArray().Length];
-        itemsLevelData.itemStackSize = new int[enabledItems.ToArray().Length];
+#if UNITY_EDITOR
+            // � ���������: �� ������ � Assets
+            savePath = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "SaveGames");
+#else
+    // � �����: �� ������ � .exe
+    savePath = Path.Combine(Application.dataPath, "..", "SaveGames");
+    savePath = Path.GetFullPath(savePath); // �����������
+#endif
 
-        for (int i = 0; i < enabledItems.ToArray().Length; i++)
-        {
-            itemsLevelData.itemName[i] = enabledItems.ToArray()[i].title;
-            itemsLevelData.itemPos[i] = enabledItems.ToArray()[i].transform.position;
-            itemsLevelData.itemRot[i] = enabledItems.ToArray()[i].transform.rotation;
-            itemsLevelData.itemStackSize[i] = enabledItems.ToArray()[i].stackSize;
-        }
-
-        string _itemsLevelData = JsonUtility.ToJson(itemsLevelData);
-        //print(_itemsLevelData);
-        File.WriteAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceItems", _itemsLevelData);
-
-        //Save lootbox items
-
-        var allSceneLootboxes = FindObjectsOfType<LootBox>();
-
-        List<string> loot_ItemNames = new List<string>();
-        List<string> loot_ItemsCount = new List<string>();
-
-        string lootBoxSceneNames = string.Empty;
-
-        foreach (LootBox lootBox in allSceneLootboxes)
-        {
-            string itemsString = string.Empty;
-            string itemsStacksize = string.Empty;
-
-            lootBoxSceneNames = lootBoxSceneNames + lootBox.name + "|";
-
-            foreach (Item item in lootBox.lootBoxItems)
+            try
             {
-                itemsString = itemsString + item.title + "|";
-                itemsStacksize = itemsStacksize + item.stackSize.ToString() + "|";
+                if (!Directory.Exists(savePath))
+                {
+                    Directory.CreateDirectory(savePath);
+                    Debug.Log("������� ����� ��� ����������: " + savePath);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError("������ ��� �������� ����� ����������: " + ex.Message);
             }
 
-            loot_ItemNames.Add(itemsString);
-            loot_ItemsCount.Add(itemsStacksize);
+            return savePath;
         }
 
-        LootBoxData lootBoxData = new LootBoxData();
-
-        lootBoxData.lootBoxSceneNames = lootBoxSceneNames;
-        lootBoxData.itemNames = loot_ItemNames.ToArray();
-        lootBoxData.stackSize = loot_ItemsCount.ToArray();
-
-        string _lootBoxData = JsonUtility.ToJson(lootBoxData);
-        File.WriteAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceLoot", _lootBoxData);
-    }
-
-
-
-    public void LoadLevelPersistence()
-    {
-        if (instance == null || loadDataTrigger)
-            return;
-
-        print("Loading persistence data");
-
-        if (File.Exists(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceItems"))
+        public void SaveLevelPersistence()
         {
-            Item[] existingItems = FindObjectsOfType<Item>();
+            string saveDir = GetSaveDirectory();
 
-            if (existingItems != null)
+            var allSceneItems = FindObjectsOfType<Item>();
+            List<Item> enabledItems = new List<Item>();
+
+            foreach (var item in allSceneItems)
             {
-                foreach (Item item in existingItems)
+                if (item.isActiveAndEnabled)
+                    enabledItems.Add(item);
+            }
+
+            LevelData itemsLevelData = new LevelData
+            {
+                itemName = new string[enabledItems.Count],
+                itemPos = new Vector3[enabledItems.Count],
+                itemRot = new Quaternion[enabledItems.Count],
+                itemStackSize = new int[enabledItems.Count]
+            };
+
+            for (int i = 0; i < enabledItems.Count; i++)
+            {
+                itemsLevelData.itemName[i] = enabledItems[i].title;
+                itemsLevelData.itemPos[i] = enabledItems[i].transform.position;
+                itemsLevelData.itemRot[i] = enabledItems[i].transform.rotation;
+                itemsLevelData.itemStackSize[i] = enabledItems[i].stackSize;
+            }
+
+            string _itemsLevelData = JsonUtility.ToJson(itemsLevelData);
+            File.WriteAllText(Path.Combine(saveDir, SceneManager.GetActiveScene().name + "_persistenceItems"), _itemsLevelData);
+
+            var allSceneLootboxes = FindObjectsOfType<LootBox>();
+            List<string> loot_ItemNames = new List<string>();
+            List<string> loot_ItemsCount = new List<string>();
+            string lootBoxSceneNames = string.Empty;
+
+            foreach (LootBox lootBox in allSceneLootboxes)
+            {
+                string itemsString = string.Empty;
+                string itemsStacksize = string.Empty;
+                lootBoxSceneNames += lootBox.name + "|";
+
+                foreach (Item item in lootBox.lootBoxItems)
+                {
+                    itemsString += item.title + "|";
+                    itemsStacksize += item.stackSize.ToString() + "|";
+                }
+
+                loot_ItemNames.Add(itemsString);
+                loot_ItemsCount.Add(itemsStacksize);
+            }
+
+            LootBoxData lootBoxData = new LootBoxData
+            {
+                lootBoxSceneNames = lootBoxSceneNames,
+                itemNames = loot_ItemNames.ToArray(),
+                stackSize = loot_ItemsCount.ToArray()
+            };
+
+            
+
+            string jsonLoot = JsonUtility.ToJson(lootBoxData);
+            File.WriteAllText(Path.Combine(saveDir, SceneManager.GetActiveScene().name + "_persistenceLoot"), jsonLoot);
+        }
+
+        public void LoadLevelPersistence()
+        {
+            if (instance == null || loadDataTrigger)
+                return;
+
+            Debug.Log("Loading persistence data");
+            string saveDir = GetSaveDirectory();
+
+            string itemPath = Path.Combine(saveDir, SceneManager.GetActiveScene().name + "_persistenceItems");
+            if (File.Exists(itemPath))
+            {
+                foreach (Item item in FindObjectsOfType<Item>())
                 {
                     Destroy(item.gameObject);
                 }
-            }
 
-            LevelData itemsLevelData = JsonUtility.FromJson<LevelData>(File.ReadAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceItems"));
+                LevelData itemsLevelData = JsonUtility.FromJson<LevelData>(File.ReadAllText(itemPath));
 
-            for (int i = 0; i < itemsLevelData.itemName.Length; i++)
-            {
-                if (itemsLevelData.itemName[i] != null)
+                for (int i = 0; i < itemsLevelData.itemName.Length; i++)
                 {
-                    try
+                    if (!string.IsNullOrEmpty(itemsLevelData.itemName[i]))
                     {
-                        var item = Instantiate(assetsDatabase.FindItem(itemsLevelData.itemName[i]));
-                        item.transform.position = itemsLevelData.itemPos[i];
-                        item.transform.rotation = itemsLevelData.itemRot[i];
-                        item.stackSize = itemsLevelData.itemStackSize[i];
-                    }
-                    catch
-                    {
-                        Debug.LogAssertion("Item you try to restore from save: " + itemsLevelData.itemName[i] + " is null or not exist in database");
+                        try
+                        {
+                            var item = Instantiate(assetsDatabase.FindItem(itemsLevelData.itemName[i]));
+                            item.transform.position = itemsLevelData.itemPos[i];
+                            item.transform.rotation = itemsLevelData.itemRot[i];
+                            item.stackSize = itemsLevelData.itemStackSize[i];
+                        }
+                        catch
+                        {
+                            Debug.LogAssertion("Item from save not found: " + itemsLevelData.itemName[i]);
+                        }
                     }
                 }
             }
-        }
 
-        if (File.Exists(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceLoot"))
-        {
-            var sceneLootBoxes = FindObjectsOfType<LootBox>();
-
-            if (sceneLootBoxes != null)
+            string lootPath = Path.Combine(saveDir, SceneManager.GetActiveScene().name + "_persistenceLoot");
+            if (File.Exists(lootPath))
             {
+                var sceneLootBoxes = FindObjectsOfType<LootBox>();
+
                 foreach (var lootbox in sceneLootBoxes)
                 {
                     lootbox.lootBoxItems = null;
                 }
-            }
 
-            for (int i = 0; i < sceneLootBoxes.Length; i++)
-            {
-                LootBoxData lootBoxData = JsonUtility.FromJson<LootBoxData>(File.ReadAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceLoot"));
+                LootBoxData lootBoxData = JsonUtility.FromJson<LootBoxData>(File.ReadAllText(lootPath));
 
-                var lootbox = sceneLootBoxes[i];
-
-                char[] separator = new char[] { '|' };
-
-                string[] itemsTitles = lootBoxData.itemNames[i].Split(separator, System.StringSplitOptions.RemoveEmptyEntries);
-
-                //foreach (string t in itemsTitles)
-                //    print(t);
-
-                string[] itemStackSizes = lootBoxData.stackSize[i].Split(separator, System.StringSplitOptions.RemoveEmptyEntries);
-
-                //foreach (string jk in itemStackSizes)
-                //    print(jk);
-
-                List<int> itemStackSizesInt = new List<int>();
-
-                foreach (string itemStackSizeString in itemStackSizes)
+                for (int i = 0; i < sceneLootBoxes.Length; i++)
                 {
-                    int resultInt = -1;
+                    var lootbox = sceneLootBoxes[i];
 
-                    int.TryParse(itemStackSizeString, out resultInt);
+                    char[] separator = new char[] { '|' };
+                    string[] itemsTitles = lootBoxData.itemNames[i].Split(separator, System.StringSplitOptions.RemoveEmptyEntries);
+                    string[] itemStackSizes = lootBoxData.stackSize[i].Split(separator, System.StringSplitOptions.RemoveEmptyEntries);
 
-                    itemStackSizesInt.Add(resultInt);
-                }
-
-                print(itemsTitles.Length);
-
-                lootbox.lootBoxItems = new List<Item>();
-
-                for (int j = 0; j < itemsTitles.Length; j++)
-                {
-                    if (assetsDatabase.FindItem(itemsTitles[j]) != null)
+                    List<int> itemStackSizesInt = new List<int>();
+                    foreach (string sizeStr in itemStackSizes)
                     {
-                        var item = Instantiate(assetsDatabase.FindItem(itemsTitles[j]));
+                        int.TryParse(sizeStr, out int result);
+                        itemStackSizesInt.Add(result);
+                    }
 
-                        //print("Cycle pass - " + j + ". Spawn item " + item.title);
+                    lootbox.lootBoxItems = new List<Item>();
+                    for (int j = 0; j < itemsTitles.Length; j++)
+                    {
+                        var asset = assetsDatabase.FindItem(itemsTitles[j]);
+                        if (asset != null)
+                        {
+                            var item = Instantiate(asset);
+                            item.gameObject.SetActive(false);
 
-                        item.gameObject.SetActive(false);
+                            if (itemStackSizesInt[j] > -1)
+                                item.stackSize = itemStackSizesInt[j];
 
-                        if (itemStackSizesInt[j] > -1)
-                            item.stackSize = itemStackSizesInt[j];
-
-                        lootbox.lootBoxItems.Add(item);
+                            lootbox.lootBoxItems.Add(item);
+                        }
                     }
                 }
             }
         }
-    }
 
-    public void ClearScenePersistence()
-    {
-        string sceneName = string.Empty;
-
-        string[] sceneNamesInBuild = new string[SceneManager.sceneCountInBuildSettings];
-
-        for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+        public void ClearScenePersistence()
         {
-            string pathToScene = SceneUtility.GetScenePathByBuildIndex(i);
-            string _sceneName = Path.GetFileNameWithoutExtension(pathToScene);
+            string saveDir = GetSaveDirectory();
 
-            sceneNamesInBuild[i] = _sceneName;
+            string[] sceneNames = new string[SceneManager.sceneCountInBuildSettings];
+            for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+            {
+                string path = SceneUtility.GetScenePathByBuildIndex(i);
+                sceneNames[i] = Path.GetFileNameWithoutExtension(path);
+            }
 
+            foreach (string scene in sceneNames)
+            {
+                string itemsPath = Path.Combine(saveDir, scene + "_persistenceItems");
+                string lootPath = Path.Combine(saveDir, scene + "_persistenceLoot");
+
+                try
+                {
+                    if (File.Exists(itemsPath))
+                        File.Delete(itemsPath);
+                }
+                catch
+                {
+                    Debug.Log($"Failed to delete item data for scene {scene}");
+                }
+
+                try
+                {
+                    if (File.Exists(lootPath))
+                        File.Delete(lootPath);
+                }
+                catch
+                {
+                    Debug.Log($"Failed to delete loot data for scene {scene}");
+                }
+            }
+
+            Debug.Log("Persistence for all levels was removed");
         }
-
-        foreach (var _sceneName in sceneNamesInBuild)
-        {
-            sceneName = _sceneName;
-
-            string itemsLevelData = Application.dataPath + "/" + sceneName + "_persistenceItems";
-            string lootBoxData = Application.dataPath + "/" + sceneName + "_persistenceLoot";
-
-            try
-            {
-                File.Delete(itemsLevelData);
-            }
-            catch
-            {
-                Debug.Log("Attemp to clear persistence for scene " + sceneName + " is failed. Probably, scene persistent data not exist");
-            }
-            try
-            {
-                File.Delete(lootBoxData);
-            }
-            catch
-            {
-                Debug.Log("Attemp to clear persistence for scene " + sceneName + " is failed. Probably, scene persistent data not exist");
-            }
-        }
-
-        print("Persistence for all levels in build was removed");
     }
-}
 }

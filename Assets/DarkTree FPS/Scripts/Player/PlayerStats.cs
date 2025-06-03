@@ -17,7 +17,7 @@ namespace DarkTreeFPS
     public class PlayerStats : MonoBehaviour
     {
         [Header("Health")]
-        public bool isGod = false;
+        public bool isGod = false;                          // Надо привязать god mode из консоли
         [Tooltip("Player's health")]
         public int health = 100;
         [Tooltip("UI element to draw health as number")]
@@ -44,7 +44,7 @@ namespace DarkTreeFPS
         public float damageScreenFadeSpeed = 1.4f;
 
         [Header("Consume stats")]
-        public bool useConsumeSystem = true;
+        public bool useConsumeSystem = true;          // Вкл / Выкл потребление
         
         public int hydration = 100;
         public float hydrationSubstractionRate = 3f;
