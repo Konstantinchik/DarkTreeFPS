@@ -42,7 +42,7 @@ namespace DTInventory
 
         string _itemsLevelData = JsonUtility.ToJson(itemsLevelData);
         //print(_itemsLevelData);
-        File.WriteAllText(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceItems", _itemsLevelData);
+        File.WriteAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceItems", _itemsLevelData);
 
         //Save lootbox items
 
@@ -77,7 +77,7 @@ namespace DTInventory
         lootBoxData.stackSize = loot_ItemsCount.ToArray();
 
         string _lootBoxData = JsonUtility.ToJson(lootBoxData);
-        File.WriteAllText(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceLoot", _lootBoxData);
+        File.WriteAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceLoot", _lootBoxData);
     }
 
 
@@ -89,7 +89,7 @@ namespace DTInventory
 
         print("Loading persistence data");
 
-        if (File.Exists(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceItems"))
+        if (File.Exists(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceItems"))
         {
             Item[] existingItems = FindObjectsOfType<Item>();
 
@@ -101,7 +101,7 @@ namespace DTInventory
                 }
             }
 
-            LevelData itemsLevelData = JsonUtility.FromJson<LevelData>(File.ReadAllText(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceItems"));
+            LevelData itemsLevelData = JsonUtility.FromJson<LevelData>(File.ReadAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceItems"));
 
             for (int i = 0; i < itemsLevelData.itemName.Length; i++)
             {
@@ -122,7 +122,7 @@ namespace DTInventory
             }
         }
 
-        if (File.Exists(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceLoot"))
+        if (File.Exists(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceLoot"))
         {
             var sceneLootBoxes = FindObjectsOfType<LootBox>();
 
@@ -136,7 +136,7 @@ namespace DTInventory
 
             for (int i = 0; i < sceneLootBoxes.Length; i++)
             {
-                LootBoxData lootBoxData = JsonUtility.FromJson<LootBoxData>(File.ReadAllText(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceLoot"));
+                LootBoxData lootBoxData = JsonUtility.FromJson<LootBoxData>(File.ReadAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_persistenceLoot"));
 
                 var lootbox = sceneLootBoxes[i];
 
@@ -206,8 +206,8 @@ namespace DTInventory
         {
             sceneName = _sceneName;
 
-            string itemsLevelData = Application.persistentDataPath + "/" + sceneName + "_persistenceItems";
-            string lootBoxData = Application.persistentDataPath + "/" + sceneName + "_persistenceLoot";
+            string itemsLevelData = Application.dataPath + "/" + sceneName + "_persistenceItems";
+            string lootBoxData = Application.dataPath + "/" + sceneName + "_persistenceLoot";
 
             try
             {

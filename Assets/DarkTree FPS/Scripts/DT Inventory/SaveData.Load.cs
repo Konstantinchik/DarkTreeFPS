@@ -18,13 +18,13 @@ namespace DTInventory
 
             //Player data
 
-            if (JsonUtility.FromJson<PlayerStatsData>(File.ReadAllText(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_playerData")) == null)
+            if (JsonUtility.FromJson<PlayerStatsData>(File.ReadAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_playerData")) == null)
             {
                 print("No save data found data found");
                 return;
             }
 
-            PlayerStatsData data = JsonUtility.FromJson<PlayerStatsData>(File.ReadAllText(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_playerData"));
+            PlayerStatsData data = JsonUtility.FromJson<PlayerStatsData>(File.ReadAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_playerData"));
 
             //AudioListener.volume = 0;
 
@@ -56,7 +56,7 @@ namespace DTInventory
 
             //NPC and Zombies
 
-            CharactersData charactersData = JsonUtility.FromJson<CharactersData>(File.ReadAllText(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_charactersData"));
+            CharactersData charactersData = JsonUtility.FromJson<CharactersData>(File.ReadAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_charactersData"));
 
             var npcToDestroy = FindObjectsOfType<NPC>();
             var zombiesToDestroy = FindObjectsOfType<ZombieNPC>();
@@ -118,7 +118,7 @@ namespace DTInventory
             //Inventory
             DTInventory inventory = Object.FindFirstObjectByType<DTInventory>();
 
-            InventoryData inventoryData = JsonUtility.FromJson<InventoryData>(File.ReadAllText(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_inventoryData"));
+            InventoryData inventoryData = JsonUtility.FromJson<InventoryData>(File.ReadAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_inventoryData"));
 
             var inventoryItems = inventoryData.itemNames;
             var stackSize = inventoryData.stackSize;
@@ -159,7 +159,7 @@ namespace DTInventory
 
             inventory.autoEquipItems = isAutoEquipEnabled;
 
-            LevelData itemsLevelData = JsonUtility.FromJson<LevelData>(File.ReadAllText(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_itemsLevelData"));
+            LevelData itemsLevelData = JsonUtility.FromJson<LevelData>(File.ReadAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_itemsLevelData"));
 
             for (int i = 0; i < itemsLevelData.itemName.Length; i++)
             {
@@ -179,7 +179,7 @@ namespace DTInventory
                 }
             }
 
-            LootBoxData lootBoxData = JsonUtility.FromJson<LootBoxData>(File.ReadAllText(Application.persistentDataPath + "/" + SceneManager.GetActiveScene().name + "_lootboxData"));
+            LootBoxData lootBoxData = JsonUtility.FromJson<LootBoxData>(File.ReadAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_lootboxData"));
 
             string lootBoxSceneNames = lootBoxData.lootBoxSceneNames;
             char[] separator = new char[] { '|' };
