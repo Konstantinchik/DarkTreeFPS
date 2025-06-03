@@ -8,6 +8,8 @@ using System.Text.RegularExpressions;
 
 public class DevConsole : MonoBehaviour
 {
+    public static DevConsole Instance { get; private set; }
+
     [Header("UI References")]
     public GameObject consolePanel;
     public TMP_InputField inputField;
@@ -36,6 +38,27 @@ public class DevConsole : MonoBehaviour
         {"teleport", "Teleport to coordinates x y z"},
         {"admin", "Enter admin mode"}
     };
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(this.gameObject); // (если нужно сохранить между сценами)
+
+        // Настроим Canvas, чтобы рендерился поверх всего
+        var canvas = consolePanel.GetComponent<Canvas>();
+        if (canvas != null)
+        {
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = 1000; // Поверх всех обычных UI
+        }
+    }
+
 
     void Start()
     {
