@@ -8,13 +8,16 @@ namespace DTInventory
 {
     public partial class SaveData : MonoBehaviour
     {
-        
+
         // [System.Obsolete]
         public void Save()
         {
             Debug.LogError("---------SAVE---------");
 
-            //Player data
+            string saveDir = GetSaveDirectory();
+            string sceneName = SceneManager.GetActiveScene().name;
+
+            // Player data
             var stat = FindFirstObjectByType<PlayerStats>();
             var camera_rot = Camera.main.transform.rotation;
             var controller = FindFirstObjectByType<FPSController>();
@@ -22,15 +25,17 @@ namespace DTInventory
             if (weaponManager == null)
                 weaponManager = FindFirstObjectByType<WeaponManager>();
 
-            PlayerStatsData p_data = new PlayerStatsData(stat.health, stat.useConsumeSystem, stat.hydration, stat.hydrationSubstractionRate, stat.thirstDamage, stat.hydrationTimer, stat.satiety, stat.satietySubstractionRate, stat.hungerDamage, stat.satietyTimer, stat.playerPosition, stat.playerRotation, camera_rot, controller.targetDirection, controller._mouseAbsolute, controller._smoothMouse);
-            string player_data = JsonUtility.ToJson(p_data);
+            PlayerStatsData p_data = new PlayerStatsData(
+                stat.health, stat.useConsumeSystem, stat.hydration, stat.hydrationSubstractionRate,
+                stat.thirstDamage, stat.hydrationTimer, stat.satiety, stat.satietySubstractionRate,
+                stat.hungerDamage, stat.satietyTimer, stat.playerPosition, stat.playerRotation,
+                camera_rot, controller.targetDirection, controller._mouseAbsolute, controller._smoothMouse
+            );
 
-            File.WriteAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_playerData", player_data);
+            File.WriteAllText(Path.Combine(saveDir, sceneName + "_playerData"), JsonUtility.ToJson(p_data));
 
-            //NPC and Zombies
-
+            // NPC and Zombies
             CharactersData charactersData = new CharactersData();
-
             NPC[] npc = FindObjectsOfType<NPC>();
 
             if (npc != null)
@@ -44,12 +49,8 @@ namespace DTInventory
                 for (int n = 0; n < npc.Length; n++)
                 {
                     charactersData.npcName[n] = npc[n].NPCNameInDatabase;
-                    charactersData.npcPos[n] = npc[n].gameObject.transform.position;
-                    charactersData.npcRot[n] = npc[n].gameObject.transform.rotation;
-
-                    //if (npc[n].curretTarget != null)
-                    //    itemsLevelData.npcCurrentTarget[n] = npc[n].curretTarget.position;
-
+                    charactersData.npcPos[n] = npc[n].transform.position;
+                    charactersData.npcRot[n] = npc[n].transform.rotation;
                     charactersData.npcLookAtTarget[n] = npc[n].lookPosition;
                 }
             }
@@ -66,41 +67,36 @@ namespace DTInventory
                 {
                     charactersData.zombiePos[z] = zombies[z].transform.position;
                     charactersData.zombieRot[z] = zombies[z].transform.rotation;
-                    charactersData.zombieIsWorried[z] = zombies[z].GetComponent<ZombieNPC>().isWorried;
+                    charactersData.zombieIsWorried[z] = zombies[z].isWorried;
                 }
             }
 
-            string _charactersData = JsonUtility.ToJson(charactersData);
-            File.WriteAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_charactersData", _charactersData);
-            //Save inventory items
+            File.WriteAllText(Path.Combine(saveDir, sceneName + "_charactersData"), JsonUtility.ToJson(charactersData));
 
+            // Inventory items
             var sceneItems = FindObjectsOfType<InventoryItem>();
             List<string> items = new List<string>();
             List<int> stacksize = new List<int>();
             List<Vector2> itemGridPos = new List<Vector2>();
-            List<Vector2> itemRectPos = new List<Vector2>();
 
             foreach (var i_item in sceneItems)
             {
                 items.Add(i_item.item.title);
                 stacksize.Add(i_item.item.stackSize);
                 itemGridPos.Add(new Vector2(i_item.x, i_item.y));
-                itemRectPos.Add(i_item.GetComponent<RectTransform>().anchoredPosition);
             }
 
-            var _i = items.ToArray();
-            var _s = stacksize.ToArray();
-            var _p = itemGridPos.ToArray();
-            var _a = weaponManager.GetActiveWeaponIndex();
+            InventoryData inventoryData = new InventoryData(
+                items.ToArray(),
+                stacksize.ToArray(),
+                itemGridPos.ToArray(),
+                weaponManager.GetActiveWeaponIndex()
+            );
 
-            InventoryData inventoryData = new InventoryData(_i, _s, _p, _a);
-            string _inventoryData = JsonUtility.ToJson(inventoryData);
-            File.WriteAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_inventoryData", _inventoryData);
+            File.WriteAllText(Path.Combine(saveDir, sceneName + "_inventoryData"), JsonUtility.ToJson(inventoryData));
 
-            //Save scene items
-
+            // Scene items
             var allSceneItems = FindObjectsOfType<Item>();
-
             List<Item> enabledItems = new List<Item>();
 
             foreach (var item in allSceneItems)
@@ -109,60 +105,55 @@ namespace DTInventory
                     enabledItems.Add(item);
             }
 
-            LevelData itemsLevelData = new LevelData();
-
-            itemsLevelData.itemName = new string[enabledItems.ToArray().Length];
-            itemsLevelData.itemPos = new Vector3[enabledItems.ToArray().Length];
-            itemsLevelData.itemRot = new Quaternion[enabledItems.ToArray().Length];
-            itemsLevelData.itemStackSize = new int[enabledItems.ToArray().Length];
-
-            for (int i = 0; i < enabledItems.ToArray().Length; i++)
+            LevelData itemsLevelData = new LevelData
             {
-                itemsLevelData.itemName[i] = enabledItems.ToArray()[i].title;
-                itemsLevelData.itemPos[i] = enabledItems.ToArray()[i].transform.position;
-                itemsLevelData.itemRot[i] = enabledItems.ToArray()[i].transform.rotation;
-                itemsLevelData.itemStackSize[i] = enabledItems.ToArray()[i].stackSize;
+                itemName = new string[enabledItems.Count],
+                itemPos = new Vector3[enabledItems.Count],
+                itemRot = new Quaternion[enabledItems.Count],
+                itemStackSize = new int[enabledItems.Count]
+            };
+
+            for (int i = 0; i < enabledItems.Count; i++)
+            {
+                itemsLevelData.itemName[i] = enabledItems[i].title;
+                itemsLevelData.itemPos[i] = enabledItems[i].transform.position;
+                itemsLevelData.itemRot[i] = enabledItems[i].transform.rotation;
+                itemsLevelData.itemStackSize[i] = enabledItems[i].stackSize;
             }
 
-            string _itemsLevelData = JsonUtility.ToJson(itemsLevelData);
-            //print(_itemsLevelData);
-            File.WriteAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_itemsLevelData", _itemsLevelData);
+            File.WriteAllText(Path.Combine(saveDir, sceneName + "_itemsLevelData"), JsonUtility.ToJson(itemsLevelData));
 
-            //Save lootbox items
-
+            // Lootboxes
             var allSceneLootboxes = FindObjectsOfType<LootBox>();
-
             List<string> loot_ItemNames = new List<string>();
             List<string> loot_ItemsCount = new List<string>();
-
             string lootBoxSceneNames = string.Empty;
 
             foreach (LootBox lootBox in allSceneLootboxes)
             {
-                string itemsString = string.Empty;
-                string itemsStacksize = string.Empty;
+                string itemsString = "";
+                string itemsStacksize = "";
 
-                lootBoxSceneNames = lootBoxSceneNames + lootBox.name + "|";
+                lootBoxSceneNames += lootBox.name + "|";
 
                 foreach (Item item in lootBox.lootBoxItems)
                 {
-                    itemsString = itemsString + item.title + "|";
-                    itemsStacksize = itemsStacksize + item.stackSize.ToString() + "|";
+                    itemsString += item.title + "|";
+                    itemsStacksize += item.stackSize + "|";
                 }
 
                 loot_ItemNames.Add(itemsString);
                 loot_ItemsCount.Add(itemsStacksize);
             }
 
-            LootBoxData lootBoxData = new LootBoxData();
+            LootBoxData lootBoxData = new LootBoxData
+            {
+                lootBoxSceneNames = lootBoxSceneNames,
+                itemNames = loot_ItemNames.ToArray(),
+                stackSize = loot_ItemsCount.ToArray()
+            };
 
-            lootBoxData.lootBoxSceneNames = lootBoxSceneNames;
-            lootBoxData.itemNames = loot_ItemNames.ToArray();
-            lootBoxData.stackSize = loot_ItemsCount.ToArray();
-
-            string _lootBoxData = JsonUtility.ToJson(lootBoxData);
-            File.WriteAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_lootboxData", _lootBoxData);
-
+            File.WriteAllText(Path.Combine(saveDir, sceneName + "_lootboxData"), JsonUtility.ToJson(lootBoxData));
         }
     }
 }

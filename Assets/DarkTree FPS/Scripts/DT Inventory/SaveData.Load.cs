@@ -12,23 +12,24 @@ namespace DTInventory
         public void Load()
         {
             print("Load started");
+            Debug.LogError("=====LOADING=====");
 
             if (weaponManager == null)
                 weaponManager = FindFirstObjectByType<WeaponManager>();
 
-            //Player data
+            string saveDir = GetSaveDirectory();
+            string sceneName = SceneManager.GetActiveScene().name;
 
-            if (JsonUtility.FromJson<PlayerStatsData>(File.ReadAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_playerData")) == null)
+            string playerDataPath = Path.Combine(saveDir, sceneName + "_playerData");
+
+            if (!File.Exists(playerDataPath))
             {
-                print("No save data found data found");
+                Debug.Log("No save data found");
                 return;
             }
 
-            PlayerStatsData data = JsonUtility.FromJson<PlayerStatsData>(File.ReadAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_playerData"));
+            PlayerStatsData data = JsonUtility.FromJson<PlayerStatsData>(File.ReadAllText(playerDataPath));
 
-            //AudioListener.volume = 0;
-
-            //Player stats
             var playerStats = FindFirstObjectByType<PlayerStats>();
             playerStats.health = data.health;
             playerStats.useConsumeSystem = data.useConsumeSystem;
@@ -42,34 +43,25 @@ namespace DTInventory
             playerStats.satietyTimer = data.satietyTimer;
 
             var controller = Object.FindFirstObjectByType<FPSController>();
-
             controller.targetDirection = data.targetDirection;
             controller._mouseAbsolute = data.mouseAbsolute;
             controller._smoothMouse = data.smoothMouse;
 
-            Transform player = GameObject.FindGameObjectWithTag("Player").GetComponent<Transform>();
+            Transform player = GameObject.FindGameObjectWithTag("Player").transform;
             player.position = data.playerPosition;
             player.rotation = data.playerRotation;
 
-            Transform cameraHolder = GameObject.Find("Camera Holder").GetComponent<Transform>();
-            cameraHolder.rotation = data.camRotation;
+            GameObject.Find("Camera Holder").transform.rotation = data.camRotation;
 
-            //NPC and Zombies
+            // NPCs and zombies
+            CharactersData charactersData = JsonUtility.FromJson<CharactersData>(
+                File.ReadAllText(Path.Combine(saveDir, sceneName + "_charactersData")));
 
-            CharactersData charactersData = JsonUtility.FromJson<CharactersData>(File.ReadAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_charactersData"));
-
-            var npcToDestroy = FindObjectsOfType<NPC>();
-            var zombiesToDestroy = FindObjectsOfType<ZombieNPC>();
-
-            foreach (var npc in npcToDestroy)
-            {
+            foreach (var npc in FindObjectsOfType<NPC>())
                 Destroy(npc.gameObject);
-            }
 
-            foreach (var zombie in zombiesToDestroy)
-            {
+            foreach (var zombie in FindObjectsOfType<ZombieNPC>())
                 Destroy(zombie.gameObject);
-            }
 
             for (int k = 0; k < charactersData.npcName.Length; k++)
             {
@@ -77,9 +69,7 @@ namespace DTInventory
                 _npc.GetComponent<UnityEngine.AI.NavMeshAgent>().enabled = false;
                 _npc.transform.position = charactersData.npcPos[k] + Vector3.up;
                 _npc.transform.rotation = charactersData.npcRot[k];
-                //_npc.GetComponent<NPC>().curretTarget.position = itemsLevelData.npcCurrentTarget[k];
                 _npc.GetComponent<NPC>().lookPosition = charactersData.npcLookAtTarget[k];
-
                 _npc.GetComponent<UnityEngine.AI.NavMeshAgent>().enabled = true;
             }
 
@@ -93,63 +83,45 @@ namespace DTInventory
                 _zombie.GetComponent<UnityEngine.AI.NavMeshAgent>().enabled = true;
             }
 
-            //Items
-
-            var itemsToDestroy = FindObjectsOfType<Item>();
-            var invItemsToDestroy = FindObjectsOfType<InventoryItem>();
-
-            var sceneLootBoxes = FindObjectsOfType<LootBox>();
-
-            foreach (var item in itemsToDestroy)
-            {
+            // Удаляем старые предметы и очищаем лутбоксы
+            foreach (var item in FindObjectsOfType<Item>())
                 Destroy(item.gameObject);
-            }
 
-            foreach (var invItem in invItemsToDestroy)
-            {
+            foreach (var invItem in FindObjectsOfType<InventoryItem>())
                 Destroy(invItem.gameObject);
-            }
 
-            foreach (var lootbox in sceneLootBoxes)
-            {
+            foreach (var lootbox in FindObjectsOfType<LootBox>())
                 lootbox.lootBoxItems.Clear();
-            }
 
-            //Inventory
+            // Инвентарь
             DTInventory inventory = Object.FindFirstObjectByType<DTInventory>();
+            InventoryData inventoryData = JsonUtility.FromJson<InventoryData>(
+                File.ReadAllText(Path.Combine(saveDir, sceneName + "_inventoryData")));
 
-            InventoryData inventoryData = JsonUtility.FromJson<InventoryData>(File.ReadAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_inventoryData"));
-
-            var inventoryItems = inventoryData.itemNames;
-            var stackSize = inventoryData.stackSize;
-            var itemPos = inventoryData.itemGridPos;
-
-            bool isAutoEquipEnabled = inventory.autoEquipItems;
-
+            bool wasAutoEquip = inventory.autoEquipItems;
             inventory.autoEquipItems = false;
 
-            if (inventoryItems != null)
+            if (inventoryData.itemNames != null)
             {
-                for (int i = 0; i < inventoryItems.Length; i++)
+                for (int i = 0; i < inventoryData.itemNames.Length; i++)
                 {
-                    var findItem = assetsDatabase.FindItem(inventoryItems[i]);
-
-                    if (findItem != null)
+                    var prefab = assetsDatabase.FindItem(inventoryData.itemNames[i]);
+                    if (prefab != null)
                     {
-                        var item = Instantiate(findItem);
+                        var item = Instantiate(prefab);
+                        item.stackSize = inventoryData.stackSize[i];
 
-                        item.stackSize = stackSize[i];
+                        inventory.AddItem(item, (int)inventoryData.itemGridPos[i].x, (int)inventoryData.itemGridPos[i].y);
 
-                        inventory.AddItem(item, (int)itemPos[i].x, (int)itemPos[i].y);
-
-                        if (inventory.FindSlotByIndex((int)itemPos[i].x, (int)itemPos[i].y).equipmentPanel != null)
+                        var slot = inventory.FindSlotByIndex((int)inventoryData.itemGridPos[i].x, (int)inventoryData.itemGridPos[i].y);
+                        if (slot.equipmentPanel != null)
                         {
-                            inventory.FindSlotByIndex((int)itemPos[i].x, (int)itemPos[i].y).equipmentPanel.equipedItem = item;
+                            slot.equipmentPanel.equipedItem = item;
                         }
                     }
                     else
                     {
-                        Debug.LogAssertion("Missing item. Check if it exists in the ItemsDatabase inspector");
+                        Debug.LogAssertion("Missing item in database: " + inventoryData.itemNames[i]);
                     }
                 }
             }
@@ -157,13 +129,15 @@ namespace DTInventory
             if (inventoryData.activeWeaponIndex != -1)
                 weaponManager.ActivateByIndexOnLoad(inventoryData.activeWeaponIndex);
 
-            inventory.autoEquipItems = isAutoEquipEnabled;
+            inventory.autoEquipItems = wasAutoEquip;
 
-            LevelData itemsLevelData = JsonUtility.FromJson<LevelData>(File.ReadAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_itemsLevelData"));
+            // Предметы на сцене
+            LevelData itemsLevelData = JsonUtility.FromJson<LevelData>(
+                File.ReadAllText(Path.Combine(saveDir, sceneName + "_itemsLevelData")));
 
             for (int i = 0; i < itemsLevelData.itemName.Length; i++)
             {
-                if (itemsLevelData.itemName[i] != null)
+                if (!string.IsNullOrEmpty(itemsLevelData.itemName[i]))
                 {
                     try
                     {
@@ -174,43 +148,36 @@ namespace DTInventory
                     }
                     catch
                     {
-                        Debug.LogAssertion("Item you try to restore from save: " + itemsLevelData.itemName[i] + " is null or not exist in database");
+                        Debug.LogAssertion("Ошибка загрузки предмета: " + itemsLevelData.itemName[i]);
                     }
                 }
             }
 
-            LootBoxData lootBoxData = JsonUtility.FromJson<LootBoxData>(File.ReadAllText(Application.dataPath + "/" + SceneManager.GetActiveScene().name + "_lootboxData"));
+            // Лутбоксы
+            LootBoxData lootBoxData = JsonUtility.FromJson<LootBoxData>(
+                File.ReadAllText(Path.Combine(saveDir, sceneName + "_lootboxData")));
 
-            string lootBoxSceneNames = lootBoxData.lootBoxSceneNames;
-            char[] separator = new char[] { '|' };
-            string[] lootBoxSceneNamesArray = lootBoxData.lootBoxSceneNames.Split(separator, System.StringSplitOptions.RemoveEmptyEntries);
+            var sceneLootBoxes = FindObjectsOfType<LootBox>();
+            var boxNames = lootBoxData.lootBoxSceneNames.Split('|', System.StringSplitOptions.RemoveEmptyEntries);
 
-            for (int i = 0; i < lootBoxSceneNamesArray.Length; i++)
+            for (int i = 0; i < boxNames.Length; i++)
             {
-                foreach (LootBox lootBox in sceneLootBoxes)
+                foreach (var lootBox in sceneLootBoxes)
                 {
-                    if (lootBox.name == lootBoxSceneNamesArray[i])
+                    if (lootBox.name == boxNames[i])
                     {
-                        string[] itemsTitles = lootBoxData.itemNames[i].Split(separator, System.StringSplitOptions.RemoveEmptyEntries);
-                        string[] itemStackSizes = lootBoxData.stackSize[i].Split(separator, System.StringSplitOptions.RemoveEmptyEntries);
+                        var items = lootBoxData.itemNames[i].Split('|', System.StringSplitOptions.RemoveEmptyEntries);
+                        var counts = lootBoxData.stackSize[i].Split('|', System.StringSplitOptions.RemoveEmptyEntries);
 
-                        List<int> itemStackSizesInt = new List<int>();
-
-                        foreach (string s in itemStackSizes)
+                        for (int j = 0; j < items.Length; j++)
                         {
-                            int integer = -1;
-                            int.TryParse(s, out integer);
-                            itemStackSizesInt.Add(integer);
-                        }
-
-                        for (int j = 0; j < itemsTitles.Length; j++)
-                        {
-                            var item = Instantiate(assetsDatabase.FindItem(itemsTitles[j]));
-                            item.stackSize = itemStackSizesInt[j];
-
+                            var item = Instantiate(assetsDatabase.FindItem(items[j]));
+                            if (int.TryParse(counts[j], out int count))
+                            {
+                                item.stackSize = count;
+                            }
                             lootBox.lootBoxItems.Add(item);
                         }
-
                     }
                 }
             }
