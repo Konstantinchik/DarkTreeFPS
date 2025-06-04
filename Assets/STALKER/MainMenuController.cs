@@ -17,7 +17,7 @@ public class MainMenuController : MonoBehaviour
     public string newGameSceneName = "GameScene"; // Имя сцены для "Новой игры"
     public GameObject optionsPanel; // Панель настроек (UI Panel)
 
-    // public bool unloadCurrentScene = false;
+    public bool IsActive => isMenuActive;
 
     [Header("Аудио")]
     public AudioClip menuMusic; // Assign Assets/STALKER/sounds/wasteland/wasteland2.ogg в инспекторе
@@ -65,11 +65,14 @@ public class MainMenuController : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Игнорируем загрузку персистентной сцены
+        /*
+        // Если загрузили игровую сцену — отключаем меню и музыку
         if (scene.name != "MainMenu_P")
         {
             currentGameScene = scene.name;
-        }
+            SetMenuActive(false); // Отключаем меню и музыку
+        }*/
+
     }
 
     private void Update()
@@ -102,12 +105,18 @@ public class MainMenuController : MonoBehaviour
         // Управление музыкой
         if (active)
         {
-            audioSource.Play();
-            Time.timeScale = 0f; // Пауза игры
+            if (audioSource != null && !audioSource.isPlaying)
+                audioSource.Play();
+            else 
+                audioSource.Stop();
+
+                Time.timeScale = 0f; // Пауза игры
         }
         else
         {
-            audioSource.Stop();
+            if (audioSource != null && audioSource.isPlaying)
+                audioSource.Stop();
+
             Time.timeScale = 1f; // Возобновление игры
 
             if (optionsPanel != null && optionsPanel.activeSelf)
@@ -117,7 +126,7 @@ public class MainMenuController : MonoBehaviour
         }
 
         // Пауза игры (если нужно)
-        Time.timeScale = active ? 0f : 1f;
+        // Time.timeScale = active ? 0f : 1f;
     }
 
     #region [START NEW GAME]
@@ -126,6 +135,7 @@ public class MainMenuController : MonoBehaviour
     {
         SaveSystem.DeleteSave(); // Очищаем сохранения (опционально)
         SceneManager.LoadScene(newGameSceneName);
+        audioSource.Stop();
         SetMenuActive(false);
     }
     #endregion
