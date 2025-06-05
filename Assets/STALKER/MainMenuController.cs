@@ -1,3 +1,4 @@
+using DarkTreeFPS;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -19,11 +20,6 @@ public class MainMenuController : MonoBehaviour
 
     public bool IsActive => isMenuActive;
 
-    [Header("Аудио")]
-    public AudioClip menuMusic; // Assign Assets/STALKER/sounds/wasteland/wasteland2.ogg в инспекторе
-    public AudioSource audioSource;
-    // public AudioMixerGroup musicMixerGroup; // Опционально, для управления громкостью
-
     private bool isMenuActive = false;
     private string currentGameScene;
 
@@ -36,18 +32,8 @@ public class MainMenuController : MonoBehaviour
 
     private void Start()
     {
-        //PlayerPrefs.DeleteAll();
 
-        // Инициализация аудио
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-            audioSource.loop = true;
-            audioSource.clip = menuMusic;
-            //if (musicMixerGroup != null)
-            //{
-            //}
-        }
+        // PlayerPrefs.DeleteAll();
 
         // Проверяем, есть ли сохраненная игра для кнопки "Продолжить"
         resumeGameButton.interactable = SaveSystem.HasSave();
@@ -65,7 +51,8 @@ public class MainMenuController : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        /*
+        /* НЕ ПОНЯТНО КАК ИСПОЛЬЗОВАТЬ ПРИ АДДИТИВНОЙ ЗАГРУЗКЕ
+         * 
         // Если загрузили игровую сцену — отключаем меню и музыку
         if (scene.name != "MainMenu_P")
         {
@@ -102,21 +89,14 @@ public class MainMenuController : MonoBehaviour
             }
         }
 
-        // Управление музыкой
+        // Пауза
         if (active)
         {
-            if (audioSource != null && !audioSource.isPlaying)
-                audioSource.Play();
-            else 
-                audioSource.Stop();
-
-                Time.timeScale = 0f; // Пауза игры
+            SoundController.Instance.PlayMenuMusic();
+            Time.timeScale = 0f; // Пауза игры
         }
         else
         {
-            if (audioSource != null && audioSource.isPlaying)
-                audioSource.Stop();
-
             Time.timeScale = 1f; // Возобновление игры
 
             if (optionsPanel != null && optionsPanel.activeSelf)
@@ -124,9 +104,6 @@ public class MainMenuController : MonoBehaviour
                 optionsPanel.SetActive(false);
             }
         }
-
-        // Пауза игры (если нужно)
-        // Time.timeScale = active ? 0f : 1f;
     }
 
     #region [START NEW GAME]
@@ -135,7 +112,6 @@ public class MainMenuController : MonoBehaviour
     {
         SaveSystem.DeleteSave(); // Очищаем сохранения (опционально)
         SceneManager.LoadScene(newGameSceneName);
-        audioSource.Stop();
         SetMenuActive(false);
     }
     #endregion
@@ -209,16 +185,7 @@ public class MainMenuController : MonoBehaviour
             SaveSystem.LoadGame();
         }
     }
-
-    /*
-    private void LoadGame()
-    {
-        Debug.Log("Opening load game menu...");
-        // Здесь будет логика выбора слотов сохранений
-        // Пока просто загружаем последнее сохранение
-        StartCoroutine(ResumeGameRoutine());
-    }
-    */
+    
 
     private void ToggleOptions()
     {
