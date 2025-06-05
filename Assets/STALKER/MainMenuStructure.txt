@@ -1,0 +1,34 @@
+Hierarchy
+MainMenu_P  scene
+	SceneManagerInstance prefab
+	MainCamera
+	Directional Light
+	Canvas->
+		BgPanel
+		VideoBg
+		UIPanel->
+			ButtonPanel->
+				NewGameButton - button
+				ResumeGameButton - button
+				LoadGameButton - button
+				LastSaveButton - button
+				OptionsButton - button
+				ExitButton - button
+			OptionsPanel->
+				OptionsVideo - panel
+				OptionsSound - panel
+				OptionsGame - panel
+				OptionsControl - panel
+			LoadGamePanel
+			NewGamePanel
+			CursorImage
+	EventSystem
+	VideoBackground
+	MainMenuController
+	DevConsoleManager
+	SoundController
+	GameManager
+
+
+
+
