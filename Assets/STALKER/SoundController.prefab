@@ -45,7 +45,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audioMixer: {fileID: 24100000, guid: ed2918254fae48840864e8ada4fce89b, type: 2}
-  musicMixerGroup: {fileID: 24300002, guid: ed2918254fae48840864e8ada4fce89b, type: 2}
+  musicMixerGroup: {fileID: -4464757315662279977, guid: ed2918254fae48840864e8ada4fce89b,
+    type: 2}
   menuMusic: {fileID: 8300000, guid: ddfecc63fdef59f46ad173af99b445b4, type: 3}
   audioSource: {fileID: 0}
   loop: 1
