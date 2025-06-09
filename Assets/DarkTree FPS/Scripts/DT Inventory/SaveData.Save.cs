@@ -4,12 +4,11 @@ using System.Collections.Generic;
 using System.IO;
 using DarkTreeFPS;
 
+// Код подготавливается для расширения (например, при будущей фильтрации по сценам).
 namespace DTInventory
 {
     public partial class SaveData : MonoBehaviour
     {
-
-        // [System.Obsolete]
         public void Save()
         {
             Debug.LogError("---------SAVE---------");
@@ -19,7 +18,7 @@ namespace DTInventory
 
             // Player data
             var stat = FindFirstObjectByType<PlayerStats>();
-            var camera_rot = Camera.main.transform.rotation;
+            var cameraRot = Camera.main.transform.rotation;
             var controller = FindFirstObjectByType<FPSController>();
 
             if (weaponManager == null)
@@ -29,39 +28,42 @@ namespace DTInventory
                 stat.health, stat.useConsumeSystem, stat.hydration, stat.hydrationSubstractionRate,
                 stat.thirstDamage, stat.hydrationTimer, stat.satiety, stat.satietySubstractionRate,
                 stat.hungerDamage, stat.satietyTimer, stat.playerPosition, stat.playerRotation,
-                camera_rot, controller.targetDirection, controller._mouseAbsolute, controller._smoothMouse
+                cameraRot, controller.targetDirection, controller._mouseAbsolute, controller._smoothMouse
             );
 
             File.WriteAllText(Path.Combine(saveDir, sceneName + "_playerData"), JsonUtility.ToJson(p_data));
 
             // NPC and Zombies
             CharactersData charactersData = new CharactersData();
-            NPC[] npc = FindObjectsOfType<NPC>();
+            var npcList = FindObjectsOfType<NPC>();
 
-            if (npc != null)
+            if (npcList != null)
             {
-                charactersData.npcName = new string[npc.Length];
-                charactersData.npcPos = new Vector3[npc.Length];
-                charactersData.npcRot = new Quaternion[npc.Length];
-                charactersData.npcCurrentTarget = new Vector3[npc.Length];
-                charactersData.npcLookAtTarget = new Vector3[npc.Length];
+                int npcCount = npcList.Length;
+                charactersData.npcName = new string[npcCount];
+                charactersData.npcPos = new Vector3[npcCount];
+                charactersData.npcRot = new Quaternion[npcCount];
+                charactersData.npcCurrentTarget = new Vector3[npcCount];
+                charactersData.npcLookAtTarget = new Vector3[npcCount];
 
-                for (int n = 0; n < npc.Length; n++)
+                for (int i = 0; i < npcCount; i++)
                 {
-                    charactersData.npcName[n] = npc[n].NPCNameInDatabase;
-                    charactersData.npcPos[n] = npc[n].transform.position;
-                    charactersData.npcRot[n] = npc[n].transform.rotation;
-                    charactersData.npcLookAtTarget[n] = npc[n].lookPosition;
+                    charactersData.npcName[i] = npcList[i].NPCNameInDatabase;
+                    charactersData.npcPos[i] = npcList[i].transform.position;
+                    charactersData.npcRot[i] = npcList[i].transform.rotation;
+                    charactersData.npcLookAtTarget[i] = npcList[i].lookPosition;
                 }
             }
 
-            ZombieNPC[] zombies = FindObjectsOfType<ZombieNPC>();
+            // Zombies
+            var zombies = FindObjectsOfType<ZombieNPC>();
 
             if (zombies != null)
             {
-                charactersData.zombiePos = new Vector3[zombies.Length];
-                charactersData.zombieRot = new Quaternion[zombies.Length];
-                charactersData.zombieIsWorried = new bool[zombies.Length];
+                int count = zombies.Length;
+                charactersData.zombiePos = new Vector3[count];
+                charactersData.zombieRot = new Quaternion[count];
+                charactersData.zombieIsWorried = new bool[count];
 
                 for (int z = 0; z < zombies.Length; z++)
                 {

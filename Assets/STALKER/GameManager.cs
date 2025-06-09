@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DarkTreeFPS;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -30,6 +31,9 @@ public class GameManager : MonoBehaviour
     public static event Action OnReturnedToMenu;
     public static event Action OnPaused;
     public static event Action OnResumed;
+    public static event Action<GameObject> OnPlayerSpawned;
+
+    private GameObject currentPlayer; // здесь ссылка на префаб игрока в сцене
 
     private const string MainMenuSceneName = "MainMenu_P";
 
@@ -56,7 +60,35 @@ public class GameManager : MonoBehaviour
         UpdateMainMenuStatus();
     }
 
-    
+    #region Подписка и отписка на Спавн игрока. Обработка спавна
+    private void OnEnable()
+    {
+        OnPlayerSpawned += HandlePlayerSpawned;
+    }
+
+    private void OnDisable()
+    {
+        OnPlayerSpawned -= HandlePlayerSpawned;
+    }
+
+    // Вызов события когда Player готов
+    public static void NotifyPlayerSpawned(GameObject player)
+    {
+        OnPlayerSpawned?.Invoke(player);
+    }
+
+    private void HandlePlayerSpawned(GameObject player)
+    {
+        currentPlayer = player;
+        Debug.Log($"[GameManager] Player spawned: {player.name}");
+
+        // Можешь здесь получить доступ к нужным компонентам:
+        var stats = player.GetComponent<PlayerStats>();
+        var cam = player.GetComponentInChildren<Camera>();
+
+        // Или передать их в другие менеджеры (UIManager, AudioManager и т.д.)
+    }
+    #endregion
 
     private void OnDestroy()
     {

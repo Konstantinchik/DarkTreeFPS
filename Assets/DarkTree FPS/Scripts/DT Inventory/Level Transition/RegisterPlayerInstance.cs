@@ -11,6 +11,7 @@ namespace DTInventory {
             if (SaveData.instance == null)
             {
                 SaveData.instance = gameObject;
+                GameManager.NotifyPlayerSpawned(gameObject);
             }
             else
             {

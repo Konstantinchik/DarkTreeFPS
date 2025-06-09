@@ -1,8 +1,15 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
+using System.Collections;
 using System.IO;
 using DarkTreeFPS;
+
+/*
+Скрипт предполагает, что MainMenu_P загружается один раз до этого (например, как стартовая сцена) и не выгружается.
+ReloadCurrentSceneAsync корректно выполняет перезагрузку только активной сцены.
+loadDataTrigger = true; вызывается после загрузки — это инициирует Load() в следующем кадре.
+*/
 
 namespace DTInventory
 {
@@ -52,15 +59,44 @@ namespace DTInventory
 
             if (Input.GetKeyDown(loadKeyCode))
             {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-                loadDataTrigger = true;
+                StartCoroutine(ReloadCurrentSceneAsync());
+            }
+        }
 
-                if (PlayerStats.isPlayerDead)
+        private IEnumerator ReloadCurrentSceneAsync()
+        {
+            int activeSceneIndex = SceneManager.GetActiveScene().buildIndex;
+
+            // Выгружаем текущую игровую сцену
+            AsyncOperation unloadOp = SceneManager.UnloadSceneAsync(activeSceneIndex);
+            while (!unloadOp.isDone)
+                yield return null;
+
+            // Загружаем сцену снова в режиме Additive
+            AsyncOperation loadOp = SceneManager.LoadSceneAsync(activeSceneIndex, LoadSceneMode.Additive);
+            while (!loadOp.isDone)
+                yield return null;
+
+            Scene loadedScene = SceneManager.GetSceneByBuildIndex(activeSceneIndex);
+            SceneManager.SetActiveScene(loadedScene);
+
+            loadDataTrigger = true;
+
+            // Восстанавливаем игрока, если он мёртв
+            if (PlayerStats.isPlayerDead)
+            {
+                GameObject cameraHolder = GameObject.Find("Camera Holder");
+                if (cameraHolder != null)
                 {
-                    Destroy(GameObject.Find("Camera Holder"));  
-                    Destroy(instance.gameObject);
-                    instance = Instantiate(gamePrefab); 
+                    Destroy(cameraHolder);
                 }
+
+                if (instance != null)
+                {
+                    Destroy(instance.gameObject);
+                }
+
+                instance = Instantiate(gamePrefab);
             }
         }
     }
