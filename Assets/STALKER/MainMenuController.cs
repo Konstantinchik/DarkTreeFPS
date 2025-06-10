@@ -8,6 +8,8 @@ public class MainMenuController : MonoBehaviour
 {
     public static MainMenuController Instance { get; private set; }
 
+    [SerializeField] private GameObject _mainMenuCamera;
+
     /* ---------- UI ---------- */
     [Header(" нопки")]
     public Button newGameButton;
@@ -95,6 +97,10 @@ public class MainMenuController : MonoBehaviour
             if (child.gameObject != gameObject)
                 child.gameObject.SetActive(active);
         }
+
+        // ”правление главной камерой меню
+        if (_mainMenuCamera != null)
+            _mainMenuCamera.SetActive(active);
 
         /* ”правление музыкой и временем */
         if (active)

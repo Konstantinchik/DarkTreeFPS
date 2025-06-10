@@ -9,6 +9,10 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
     // СПИСОК МЕТОДОВ
+
+    // public static void NotifyPlayerSpawned(GameObject player)
+    // private void HandlePlayerSpawned(GameObject player)
+
     // private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     // private void OnSceneUnloaded(Scene scene)
     // private void UpdateMainMenuStatus()
